@@ -69,8 +69,7 @@
           
         this.print = function(){   
             tempNode = this.head;  
-            while(tempNode != null){  
-                console.log(tempNode.data + " ");  
+            while(tempNode != null){
                 tempNode = tempNode.next;  
             }  
         };  
