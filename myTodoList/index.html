@@ -4,109 +4,63 @@
     <meta charset="UTF-8">
     <title>myTodoList</title>
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
-    <style>
-        body,html,ul{
-            margin: 0;
+     <style>
+        html,body,{
             padding: 0;
-        }
-        body{
-            background-color: #ccc;
-        }
-        ul,li{
-            list-style: none;
+            margin: 0;
         }
         input{
             outline: none;
         }
-        a{
-            text-decoration: none;
-            color: #000;
+        ul{
+            list-style: none;
+            margin: 0;
+            padding: 0;
         }
-        #app{
-            width: 500px;
-            height: 500px;
-            margin: 10px auto;
+
+         #app{
+             width: 600px;
+             height: 200px;
+             margin: 20px auto;
+         }
+         #app h1{
+             text-align: center;
+         }
+         #app .input{
+             width: 100%;
+             height: 50px;
+         }
+        #app .content li{
+            width: 90%;
+            height: 50px;
+            margin: auto;
+            background-color: red;
         }
-        #app .todo-input{
-            width: 400px;
-            height: 40px;
-            margin-top: 10px;
-            margin-left: 50px;
-            font-size: 22px;
-        }   
-        #app .main{
-            width: 400px;
-            margin: 10px auto;
-        }
-        #app .main li{
-            position: relative;
-            width: 400px;
-            height: 30px;
-            font-size: 16px;
-            line-height: 30px;
-            border-bottom: 1px #ccc solid;
-        }
-        #app .main .toggle{
-            width: 25px;
-            height: 25px;
-            margin-top: 5px;
-        }
-        #app .main label{
-            text-align: center;
-        }
-        #app .main .delete{
-            float: right;
-            margin-right: 5px;
-        }
-        #app .main .edite{
-            position: absolute;
-            width: 300px;
-            height: 30px;
-            top: 0;
-            left: 26px;
-        }
-        
-        /*footer*/
-        #app .footer{
-            width: 400px;
-            margin: 10px auto;
-        }
-        #app .footer ul li{
-            float: left;
-            margin-left: 20px;
-        }
-    </style>
+         #app input[type="checkbox"]{
+             width: 24px;
+             height: 24px;
+             margin-top: 12px;
+         }
+
+     </style>
 </head>
 <body>
     <div id="app">
-        <input class="todo-input" placeholder="What needs to be done?" v-model="newTodo" v-on:keyup.enter="addTodo">
-        <section class="main" v-show="todos.length">
-            <ul v-for="todo in filteredTodos"> 
-                <li>
-                    <div class="view">
-                        <input class="toggle" type="checkbox" v-model="todo.complete">
-                        <label v-on:dbclick="editeTodo(todo)">{{todo.title}}</label>
-                        <button class="delete" v-on:click="removeTodo(todo)">delete</button>
-                    </div>
-                    <input class="edite" type="text" v-model="todo.title">
-                </li>
-                
-            </ul>   
-        </section>
-        <footer class="footer" v-show="todos.length">
-            <ul>
-                <li><a href="#/all">all</a></li>
-                <li><a href="#/completed" >complete</a></li>
-            </ul>            
-        </footer>
+        <h1>任务清单</h1>
+        <input class="input" v-model="newTodo" v-on:keyup.enter="addTodo">
+        <ul class="content">
+            <li v-for="todo in todos">
+                <input type="checkbox">
+                <label v-on:dbclick="editTodo(todo)">{{todo.title}}</label>
+                <inpu v-bind="{}" v-model="todo.title">
+            </li>
+        </ul>
     </div>
-
-    <script>
-    var STORAGE_KEY = 'todolist-by-cy'
-    //本地存储
+<script>
+    var STORAGE_KEY = "cy"
     var todoStorage = {
         fetch:function(){
-            var todos = JSON.parse(localStorage.getItem(STORAGE_KEY)|| '[]')
+            var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
             todoStorage.uid = todos.length
             return todos
         },
@@ -114,70 +68,35 @@
             localStorage.setItem(STORAGE_KEY,JSON.stringify(todos))
         }
     }
-    //过滤器
-    var filters = {
-        all:function(todos){
-            return todos
-        },
-        completed:function(todos){
-            return todos.filter(function(todo){
-                return todo.complete
-            })
-        }
-    }    
-    var app = new Vue({
+
+    new Vue({
         el:'#app',
         data:{
-            newTodo:'',
-            todos:todoStorage.fetch(),
-            type:'all'
+            newTodo: '',
+            todos: todoStorage.fetch()
         },
         methods:{
-            addTodo:function(){
+            addTodo:function () {
                 var value = this.newTodo || this.newTodo.trim()
-                if(!value) {
-                    return
-                }
                 this.todos.push({
                     id:todoStorage.uid++,
                     title:value,
-                    complete:false
+                    complate:false
                 })
-                this.newTodo = ''
             },
-            editeTodo:function(todo){
+            editTodo:function (todo) {
                 this.oldTodoTitle = todo.title
-            },
-            removeTodo:function(todo){
-                this.todos.splice(this.todos.indexOf(todo),1)
             }
         },
         watch:{
             todos:{
-                handler:function(todos){
+                handler:function(){
                     todoStorage.save(todos)
                 },
                 deep:true
             }
-        },
-        computed:{
-            filteredTodos:function(){
-                return filters[this.type](this.todos)
-            }
         }
     })
-
-    function onHashChange(){
-        var type = window.location.hash.replace(/#\/?/,'')
-        if(filters[type]){
-            app.type = type
-        }else{
-            window.location.hash = ''
-            app.type = 'all'
-        }
-    }
-    window.addEventListener('hashchange',onHashChange)
-    onHashChange()
-    </script>
+</script>
 </body>
 </html>
