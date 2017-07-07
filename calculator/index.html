@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <title>calculator</title>
     <style>
-        *{
+        * {
             box-sizing: border-box;
         }
-        .container{
+
+        .container {
             position: absolute;
             top: 0;
             right: 0;
@@ -15,10 +16,11 @@
             bottom: 0;
             margin: auto;
             width: 400px;
-            height: 600px;
+            height: 700px;
             background-color: #000;
         }
-        .container .textarea{
+
+        .container .textarea {
             position: relative;
             width: 100%;
             height: 100px;
@@ -26,15 +28,17 @@
             font-size: 26px;
             margin: 0;
             background-color: #000;
-            border: 0 ;
+            border: 0;
         }
-        .container .textarea #show{
+
+        .container .textarea #showTextarea {
             position: absolute;
             max-width: 400px;
             bottom: 0;
             right: 0;
         }
-        .container .button td{
+
+        .container .button td {
             width: 100px;
             height: 100px;
             background-color: #fff;
@@ -43,60 +47,68 @@
             text-align: center;
             cursor: pointer;
         }
+
         .container .button tr td:nth-child(4),
-        .container .button .last td:nth-last-child(1){
+        .container .button .last td:nth-last-child(1) {
             border-right: 1px solid #000;
 
         }
-        .container .button .last td{
-            border-bottom: 1px solid #000; 
+
+        .container .button .last td {
+            border-bottom: 1px solid #000;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="textarea">
-            <div id="show"></div>
-        </div>
-        <table cellspacing="0" id="button" class="button">
-                <tr>
-                    <td>C</td>
-                    <td><-</td>
-                    <td>/</td>
-                    <td>x</td>
-                </tr>
-                <tr>
-                    <td>7</td>
-                    <td>8</td>
-                    <td>9</td>
-                    <td>%</td>
-                </tr>
-                <tr>
-                    <td>4</td>
-                    <td>5</td>
-                    <td>6</td>
-                    <td>-</td>
-                </tr>
-                <tr>
-                    <td>1</td>
-                    <td>2</td>
-                    <td>3</td>
-                    <td>+</td>
-                </tr>
-                <tr class="last">
-                    <td>0</td>
-                    <td>.</td>
-                    <td colspan="2" style="background-color: #CD661D;">=</td>
-                </tr>
-            
-        </table>
+<div class="container">
+    <div class="textarea">
+        <div id="showTextarea"></div>
     </div>
-    <script src="javascripts/List.js"></script>
-     <script src="javascripts/calculator.js"></script>
-     <script>
-         var calculator = new Calculator();
-         calculator.init();
-         
-     </script>
+    <table cellspacing="0" id="button" class="button">
+        <tr>
+            <td>C</td>
+            <td><</td>
+            <td>/</td>
+            <td>x</td>
+        </tr>
+        <tr>
+            <td>-/+</td>
+            <td>(</td>
+            <td>)</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>8</td>
+            <td>9</td>
+            <td>%</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>5</td>
+            <td>6</td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>2</td>
+            <td>3</td>
+            <td>+</td>
+        </tr>
+        <tr class="last">
+            <td>0</td>
+            <td>.</td>
+            <td colspan="2" style="background-color: #CD661D;">=</td>
+        </tr>
+
+    </table>
+</div>
+<script src="javascripts/List.js"></script>
+<script src="javascripts/calculator.js"></script>
+<!--<script>
+    var calculator = new Calculator();
+    calculator.init();
+
+</script>-->
 </body>
 </html>

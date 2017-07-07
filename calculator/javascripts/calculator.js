@@ -1,147 +1,139 @@
-"use strict";
-var Calculator = function(){
-    var list = null;
-    var result ="";// 储存在显示框中显示的东西
-    this.flag = true;//记录是否完成一次运算 
-    this.textCope = "";// 储存text的上一个值 为了后面的show方法中的判断做准备 防止连续出现多个运算符
-    this.num = /\d/;
-    this.ope = /\D/;
-    this.reOpeOne =/[x/%]/; //匹配 x / %
-    this.numString="";// 记录数字字符
-   
+/*思路：
+ 1.字符是数字，添加到输出队列。
+ 2.字符是运算符，如果当前运算符的优先级大于前一个运算符，则加入栈中；
+ 如果当前运算符的优先级小于等于前一个运算符，则将栈中的运算符全部取出，再将当前运算符加入栈中。
+ 3.字符是左括号，加入栈中。
+ 4.字符是右括号，将栈中左括号之前的所有运算符依次添加到输出队列。
+ 5.最后形成输出队列，依次将运算符前两位数字进行相应的运算，最后得出结果。
+ */
+
+/*需考虑的误操作：
+ 1.用户连续输入多个运算符。
+ 2.用户输入括号时不匹配。
+ 3.用户进行除法操作时除数为0。
+ 4.用户在输入时出现类似情况：2+2+，当用户点击“=”进行计算时。
+ 5.用户计算0.2 + 0.1 结果不符合。
+ */
+
+var Calculator = function () {
+    "use strict"
+    var btn, showTextarea; //按钮 ， 显示内容的区域
+    var textString = ""; //储存在计算器界面显示的字符串
+    var numString = ""; //储存一个完整的操作数
+    var flagNumStringNumber = 0;  //退格操作的判断，作用是判断是否退格了一个完整的操作数
+    var beforeElementText = "";  //暂时储存前一个字符,作用是防止2个及以上连续的运算符
+    var stack = [], //存放运算符的栈空间
+        dataBefore = [], //存放最开始的数据
+        dataAfter = []; //存放后缀变换完成后的数据
+
     //初始化
-    this.init = function(){
-        var btn = document.getElementById("button")
-        this.addListener(btn)
+    this.init = function () {
+        this.getElement()
+        this.addListener()
     }
-    //事件代理
-    this.addListener = function(obj){
+
+    //获取按钮元素
+    this.getElement = function () {
+        btn = document.querySelector("#button")
+        showTextarea = document.querySelector("#showTextarea")
+    }
+
+    //绑定事件
+    this.addListener = function () {
         var self = this
-        obj.addEventListener("click",function(e){
-            var el = e.target
-            self.action(el)
+        btn.addEventListener("click", function (e) {
+            var el = e.target  //获取被点击的元素
+            self.verifyInput(el)
         })
     }
-    //具体行为
-    this.action = function(obj){
-        if(list === null) list = new List()
 
-                //当完成一次运算后 若再次输入的是数字则清空原来的数据，若输入的不是数字 则把上一次得到的结果当成这次运算的一个操作数
-                if(!this.flag&&this.num.test(obj.innerText)){
-                    result = ""
-                    this.numString = ""
-                    this.textCope = ""
-                }
-                if(obj.innerText==="="){
-                    this.cut(obj.innerText)
-                    this.computer()
-                    this.flag = false
-                }else if(obj.innerText==="C"){
-                    result = "" // C 表示清空
-                    this.numString = ""
-                    this.textCope = ""
-                    document.getElementById("show").innerText=result;
-                }else if(obj.innerText==="<-"){// <-表示后退一个
-                    var stringNum = result.length
-                    result = result.substring(0,stringNum-1)
-                    document.getElementById("show").innerText = result //截取字符串
-                    if(this.numString===""){
-                        list.remove(list.size-1)
-                        this.numString = list.getData(list.size-1)
-                        list.remove(list.size-1)
-                    }else{
-                        var i = this.numString.length
-                        this.numString = this.numString.substring(0,i-1)
-                    }
-                    
-                }else{ 
-                    this.flag = true
-                    this.show(obj.innerText)
-                }
-    }
-    //显示
-    this.show = function(text){
-        //判断 最开始输入的只能是数字 而且 运算符不能连续输入 如：56/x||56xx等是错误的
-        if(!((this.textCope===""&&this.ope.test(text))||((text===this.textCope)&&this.ope.test(text))||(this.ope.test(text)&&this.ope.test(this.textCope)))){
-            result += text
-            document.getElementById("show").innerText = result
-            this.cut(text)
-        }        
-        this.textCope = text
-    }
-    //截取数字 和 运算符
-    this.cut = function(text){
-        if(this.num.test(text)||/[.]/.test(text)){
-            this.numString += text //把连续输入的数字分为一组
-        }else if(this.ope.test(text)){
-            if(this.numString!=="")  
-            list.insert(this.numString)
-            list.insert(text)
-            this.numString = ""
-        };
-    }
-    //计算
-    this.computer = function(){
-        var sum = 0 //记录运算结果
-        var i = -1 //记录运算符的位置
-        var tempOne = ""
-        
-        if (list.size%2) list.remove(list.size-2);//解决出现类似 12+5-3+（多打了运算符） 点击等号运算出现错误的情况 
-
-        //运算符 x / % 的运算
-        while(true){
-            i += 2
-            tempOne = list.getData(i)
-            if(tempOne==="=") break
-            else if(this.reOpeOne.test(tempOne)){
-                switch(tempOne){
-                    case "x":
-                        sum = parseFloat(list.getData(i-1)) * parseFloat(list.getData(i+1))
-                        list.setData(i-1,sum)
-                        list.remove(i+1)
-                        list.remove(i)
-                        break
-                    case "/":
-                        sum = parseFloat(list.getData(i-1)) / parseFloat(list.getData(i+1))
-                        list.setData(i-1,sum)
-                        list.remove(i+1)
-                        list.remove(i)
-                        break;
-                    case "%":
-                        sum = parseFloat(list.getData(i-1)) % parseFloat(list.getData(i+1))
-                        list.setData(i-1,sum)
-                        list.remove(i+1)
-                        list.remove(i)
-                        break
-                }
-                i = -1
-            }           
-        }
-        //运算符 + - 的运算
-        while(true){
-            i += 2
-            tempOne = list.getData(i)
-            if(tempOne==="=") break
-            else{
-                switch(tempOne){
-                    case "+":
-                        sum = parseFloat(list.getData(i-1)) + parseFloat(list.getData(i+1))
-                        list.setData(i-1,sum)
-                        list.remove(i+1)
-                        list.remove(i)
-                        break
-                    case "-":
-                        sum = parseFloat(list.getData(i-1)) - parseFloat(list.getData(i+1))
-                        list.setData(i-1,sum)
-                        list.remove(i+1)
-                        list.remove(i)
-                        break
-                }
-                i = -1
+    //根据用户的输入执行相应的操作
+    this.verifyInput = function (element) {
+        var elementText = element.innerText
+        //判断小数点
+        if (elementText === ".") {
+            numString += elementText
+            //防止小数点前没有数字和多个小数点的出现
+            var length = (numString.match(/(\.)/g)).length
+            if (length < 2) {
+                textString += elementText
             }
         }
-        result = ""
-        this.show(sum)//显示结果
-        list = null //清除链表
+
+        //判断是否为正负数
+        if (elementText === "-/+") {
+
+        }
+
+        //判断是否为数字字符
+        if (/\d/.test(elementText)) {
+            numString += elementText
+            textString += elementText
+        }
+
+        //判断是否为运算符且不能连续的运算符
+        if (/[x/%+-]|\(|\)/.test(elementText) && !/[x/%+-]|\(|\)/.test(beforeElementText)) {
+            if (elementText !== "-/+") {
+                this.storeData(numString, "add")
+                numString = ""
+                this.storeData(elementText, "add")
+                textString += elementText
+            }
+        }
+
+        //退格操作
+        if (elementText === "<") {
+            var length = textString.length
+            //在退格的过程中判断是否完全的删除了一个数
+            var tempOperator = textString.substring(length - 1, length)
+            textString = textString.substring(0, length - 1)
+            if (/[x/%+-]/.test(tempOperator)) {
+                this.storeData(null, "delete")
+                numString = dataBefore[dataBefore.length - 1]
+                this.storeData(null, "delete")
+            } else {
+                numString = numString.substring(0, numString.length - 1)
+            }
+        }
+
+        //清除
+        if (elementText === "C") {
+            textString = ""
+        }
+        beforeElementText = elementText
+        this.show()
     }
+
+    //向数组中进行数据的添加，删除
+    this.storeData = function (str, type) {
+        //str:要向数组中储存的字符；type:表示要进行的操作，如添加，删除
+        switch (type) {
+            case "add":
+                dataBefore.push(str)
+                break;
+            case "delete":
+                dataBefore.pop()
+                break;
+        }
+    }
+
+    //后缀式的转变
+
+    //计算
+    this.computer = function () {
+
+    }
+
+    //在屏幕上显示
+    this.show = function () {
+        showTextarea.innerText = textString
+    }
+
+    this.init()
+
+
 }
+
+new Calculator()
+
+
